@@ -17,9 +17,12 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
 import edu.wpi.first.cameraserver.CameraServer;
+import edu.wpi.first.cscore.CvSource;
 import edu.wpi.first.cscore.MjpegServer;
 import edu.wpi.first.cscore.UsbCamera;
+import edu.wpi.first.cscore.VideoMode;
 import edu.wpi.first.cscore.VideoSource;
+import edu.wpi.first.cscore.VideoMode.PixelFormat;
 import edu.wpi.first.networktables.EntryListenerFlags;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.vision.VisionPipeline;
@@ -314,13 +317,14 @@ public final class Main {
     NetworkTableInstance ntinst = NetworkTableInstance.getDefault();
     if (server) {
       System.out.println("Setting up NetworkTables server");
-      ntinst.startServer();
+      ntinst.startServer("networktables.ini", "127.0.0.1");
       System.out.println("NT connected? " + ntinst.isConnected());
     } else {
       System.out.println("Setting up NetworkTables client for team " + team);
       ntinst.startClientTeam(team);
       ntinst.startDSClient();
     }
+    ntinst.setUpdateRate(0.01);
 
     // start cameras
     for (CameraConfig config : cameraConfigs) {
@@ -334,29 +338,40 @@ public final class Main {
 
     // start image processing on camera 0 if present
     if (cameras.size() >= 1) {
+      String CAMERA_NAME = cameras.get(0).getName();
+      System.out.println("Using camera 0: ");
+      System.out.println(CAMERA_NAME);
+      System.out.println("Width");
+      System.out.println(cameras.get(0).getProperty("width").toString());
+      System.out.println("Height");
+      System.out.println(cameras.get(0).getProperty("height").toString());
+      //FIXME not 10
+      int width = 10;
+      int height = 10;
+      CvSource source = CameraServer.putVideo("Virtual Camera", width, height);
       VisionThread testThread = new VisionThread(cameras.get(0),
         new TestPipeline(), pipeline -> {
           pipeline.findBlobsOutput.toList().forEach(keypoint -> {
             System.out.println(keypoint.pt.x);
             System.out.println(keypoint.pt.y);
-
           }
         );
+        source.putFrame(pipeline.getMatOutput());
       });
       VisionThread ballTrack = new VisionThread(cameras.get(0),
         new BallFinder(), pipeline -> {
           List<KeyPoint> blobList = pipeline.findBlobsOutput.toList();
-          NetworkTablesHelper.setBoolean("photonvision", cameraConfigs.get(0).name, "hasTarget", blobList.size() > 0);
+          NetworkTablesHelper.setBoolean("photonvision", CAMERA_NAME, "hasTarget", blobList.size() > 0);
           KeyPoint[] bestBlob = {blobList.get(0)};
           blobList.forEach(keypoint -> {
             if(keypoint.size > bestBlob[0].size) {
               bestBlob[0] = keypoint;
             }
           });
-          NetworkTablesHelper.setDouble("photonvision", cameraConfigs.get(0).name, "targetPixelsX", bestBlob[0].pt.x);
-          
+          NetworkTablesHelper.setDouble("photonvision", CAMERA_NAME, "targetPixelsX", bestBlob[0].pt.x);
+          ntinst.flush();
       });
-      NetworkTablesHelper.setBoolean("CameraPublisher", new StringBuilder(cameraConfigs.get(0).name).append("-output").toString(), "connected", true);
+      NetworkTablesHelper.setBoolean("CameraPublisher", new StringBuilder(CAMERA_NAME).append("-output").toString(), "connected", true);
       /* something like this for GRIP:
       VisionThread visionThread = new VisionThread(cameras.get(0),
               new GripPipeline(), pipeline -> {
@@ -372,7 +387,7 @@ public final class Main {
     for (;;) {
       try {
         Thread.sleep(10000);
-        System.out.println("NT connected? " + ntinst.isConnected());
+        //System.out.println("NT connected? " + ntinst.isConnected());
       } catch (InterruptedException ex) {
         return;
       }

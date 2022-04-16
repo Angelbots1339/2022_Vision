@@ -18,11 +18,19 @@ public class TestPipeline implements VisionPipeline {
 
 	//Outputs
 	public MatOfKeyPoint findBlobsOutput = new MatOfKeyPoint();
+	// FIXME synchronize?
+	private Mat testMat = new Mat();
 
 	public int blobsDetected = 0;
 
 	static {
 		System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
+	}
+
+	public Mat getMatOutput() {
+		synchronized(testMat) {
+			return testMat;
+		}
 	}
 
 	/**
@@ -35,7 +43,10 @@ public class TestPipeline implements VisionPipeline {
 		double[] findBlobsCircularity = {0.0, 1.0};
 		boolean findBlobsDarkBlobs = false;
 		findBlobs(findBlobsInput, findBlobsMinArea, findBlobsCircularity, findBlobsDarkBlobs, findBlobsOutput);
-
+		synchronized(testMat) {
+			testMat = source0;
+		}
+		
 	}
 
 	/**

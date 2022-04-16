@@ -30,7 +30,7 @@ public class BallFinder implements VisionPipeline{
 	private Mat cvErodeOutput = new Mat();
 	private Mat blur1Output = new Mat();
 	public MatOfKeyPoint findBlobsOutput = new MatOfKeyPoint();
-	private Mat maskOutput = new Mat();
+	public Mat maskOutput = new Mat();
 
 	private boolean switchSwitch = false;
 	static {
