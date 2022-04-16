@@ -25,6 +25,7 @@ import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.vision.VisionPipeline;
 import edu.wpi.first.vision.VisionThread;
 
+import org.opencv.core.KeyPoint;
 import org.opencv.core.Mat;
 
 //import org.opencv.objdetect.*;
@@ -233,10 +234,11 @@ public final class Main {
    */
   public static VideoSource startCamera(CameraConfig config) {
     System.out.println("Starting camera '" + config.name + "' on " + config.path);
-    CameraServer inst = CameraServer.getInstance();
+    // CameraServer inst = CameraServer.getInstance();
 
     UsbCamera camera = new UsbCamera(config.name, config.path);
-    MjpegServer server = inst.startAutomaticCapture(camera);
+    // MjpegServer server = inst.startAutomaticCapture(camera);
+    MjpegServer server = CameraServer.startAutomaticCapture(camera);
 
     Gson gson = new GsonBuilder().create();
 
@@ -255,7 +257,8 @@ public final class Main {
    */
   public static MjpegServer startSwitchedCamera(SwitchedCameraConfig config) {
     System.out.println("Starting switched camera '" + config.name + "' on " + config.key);
-    MjpegServer server = CameraServer.getInstance().addSwitchedCamera(config.name);
+    // MjpegServer server = CameraServer.getInstance().addSwitchedCamera(config.name);
+    MjpegServer server = CameraServer.addSwitchedCamera(config.name);
 
     NetworkTableInstance.getDefault()
         .getEntry(config.key)
@@ -331,20 +334,38 @@ public final class Main {
 
     // start image processing on camera 0 if present
     if (cameras.size() >= 1) {
-      VisionThread visionThread = new VisionThread(cameras.get(0),
-              new TestPipeline(), pipeline -> {
-        pipeline.findBlobsOutput.toList().forEach(keypoint -> {
-          System.out.println(keypoint.pt.x);
-          System.out.println(keypoint.pt.y);
-        });
+      VisionThread testThread = new VisionThread(cameras.get(0),
+        new TestPipeline(), pipeline -> {
+          pipeline.findBlobsOutput.toList().forEach(keypoint -> {
+            System.out.println(keypoint.pt.x);
+            System.out.println(keypoint.pt.y);
+
+          }
+        );
       });
+      VisionThread ballTrack = new VisionThread(cameras.get(0),
+        new BallFinder(), pipeline -> {
+          List<KeyPoint> blobList = pipeline.findBlobsOutput.toList();
+          NetworkTablesHelper.setBoolean("photonvision", cameraConfigs.get(0).name, "hasTarget", blobList.size() > 0);
+          KeyPoint[] bestBlob = {blobList.get(0)};
+          blobList.forEach(keypoint -> {
+            if(keypoint.size > bestBlob[0].size) {
+              bestBlob[0] = keypoint;
+            }
+          });
+          NetworkTablesHelper.setDouble("photonvision", cameraConfigs.get(0).name, "targetPixelsX", bestBlob[0].pt.x);
+          
+      });
+      NetworkTablesHelper.setBoolean("CameraPublisher", new StringBuilder(cameraConfigs.get(0).name).append("-output").toString(), "connected", true);
       /* something like this for GRIP:
       VisionThread visionThread = new VisionThread(cameras.get(0),
               new GripPipeline(), pipeline -> {
         ...
       });
        */
-      visionThread.start();
+      // FIXME Change to tracking thread
+      testThread.start();
+      //ballTrack.start();
     }
 
     // loop forever

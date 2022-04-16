@@ -1,14 +1,11 @@
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.List;
 
 import edu.wpi.first.vision.VisionPipeline;
 
 import org.opencv.core.*;
-import org.opencv.core.Core.*;
 import org.opencv.features2d.SimpleBlobDetector;
-import org.opencv.core.KeyPoint;
 
 /**
 * TestPipeline class.

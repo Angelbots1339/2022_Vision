@@ -1,18 +1,13 @@
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-import java.util.HashMap;
 
 import org.opencv.core.*;
-import org.opencv.core.Core.*;
-import org.opencv.features2d.FeatureDetector;
-import org.opencv.imgcodecs.Imgcodecs;
+import org.opencv.features2d.SimpleBlobDetector;
 import org.opencv.imgproc.*;
-import org.opencv.objdetect.*;
+
+import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.vision.VisionPipeline;
 
 /**
 * BallFinder class.
@@ -21,7 +16,7 @@ import org.opencv.objdetect.*;
 *
 * @author GRIP
 */
-public class BallFinder {
+public class BallFinder implements VisionPipeline{
 
 	//Outputs
 	private Mat resizeImageOutput = new Mat();
@@ -34,7 +29,7 @@ public class BallFinder {
 	private Mat cvDilateOutput = new Mat();
 	private Mat cvErodeOutput = new Mat();
 	private Mat blur1Output = new Mat();
-	private MatOfKeyPoint findBlobsOutput = new MatOfKeyPoint();
+	public MatOfKeyPoint findBlobsOutput = new MatOfKeyPoint();
 	private Mat maskOutput = new Mat();
 
 	private boolean switchSwitch = false;
@@ -46,6 +41,8 @@ public class BallFinder {
 	 * This is the primary method that runs the entire pipeline and updates the outputs.
 	 */
 	public void process(Mat source0) {
+		setswitch0(NetworkTableInstance.getDefault().getTable("FMSInfo").getEntry("IsRedAlliance").getBoolean(false));
+
 		// Step Resize_Image0:
 		Mat resizeImageInput = source0;
 		double resizeImageWidth = 267.0;
@@ -416,7 +413,7 @@ public class BallFinder {
 	 */
 	private void findBlobs(Mat input, double minArea, double[] circularity,
 		Boolean darkBlobs, MatOfKeyPoint blobList) {
-		FeatureDetector blobDet = FeatureDetector.create(FeatureDetector.SIMPLEBLOB);
+			SimpleBlobDetector blobDet = SimpleBlobDetector.create();
 		try {
 			File tempFile = File.createTempFile("config", ".xml");
 
