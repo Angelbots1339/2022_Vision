@@ -333,7 +333,7 @@ public final class Main {
     if (cameras.size() >= 1) {
       VisionThread visionThread = new VisionThread(cameras.get(0),
               new TestPipeline(), pipeline -> {
-        pipeline.blobsList.forEach(keypoint -> {
+        pipeline.findBlobsOutput.toList().forEach(keypoint -> {
           System.out.println(keypoint.pt.x);
           System.out.println(keypoint.pt.y);
         });

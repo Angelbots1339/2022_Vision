@@ -21,7 +21,6 @@ public class TestPipeline implements VisionPipeline {
 
 	//Outputs
 	public MatOfKeyPoint findBlobsOutput = new MatOfKeyPoint();
-	public List<KeyPoint> blobsList = findBlobsOutput.toList();
 
 	public int blobsDetected = 0;
 
@@ -39,7 +38,7 @@ public class TestPipeline implements VisionPipeline {
 		double[] findBlobsCircularity = {0.0, 1.0};
 		boolean findBlobsDarkBlobs = false;
 		findBlobs(findBlobsInput, findBlobsMinArea, findBlobsCircularity, findBlobsDarkBlobs, findBlobsOutput);
-		findBlobsOutput.toList();
+
 	}
 
 	/**
