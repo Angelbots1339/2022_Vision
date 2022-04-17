@@ -339,11 +339,11 @@ public final class Main {
     }
 
     String CAMERA_NAME = cameras.get(0).getName();
-    CvSource source = CameraServer.putVideo("rPi Camera 0-input", 160, 120);
+    // CvSource source = CameraServer.putVideo("rPi Camera 0-input", 160, 120);
     CvSource output = CameraServer.putVideo("rPi Camera 0-output", 267, 216);
 
-    VisionThread publishSource = new VisionThread(cameras.get(0), new PublishMat(source), pipeline -> {});
-    publishSource.start();
+    // VisionThread publishSource = new VisionThread(cameras.get(0), new PublishMat(source), pipeline -> {});
+    // publishSource.start();
 
     NetworkTablesHelper.setDouble("photonvision", CAMERA_NAME, "pipelineIndex", -1);
     boolean trackingStarted = false;
