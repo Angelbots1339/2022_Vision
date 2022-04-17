@@ -316,12 +316,13 @@ public final class Main {
     // start NetworkTables
     NetworkTableInstance ntinst = NetworkTableInstance.getDefault();
     if (server) {
-      System.out.println("Setting up NetworkTables server");
-      ntinst.startServer("networktables.ini", "127.0.0.1");
+      System.out.println("Setting up NetworkTables server on localhost");
+      ntinst.startServer("networktables.ini", "localhost");
       System.out.println("NT connected? " + ntinst.isConnected());
     } else {
       System.out.println("Setting up NetworkTables client for team " + team);
-      ntinst.startClientTeam(team);
+      //ntinst.startClientTeam(team);
+      ntinst.startClient("192.168.99.114");
       ntinst.startDSClient();
     }
     ntinst.setUpdateRate(0.01);
@@ -339,15 +340,8 @@ public final class Main {
     // start image processing on camera 0 if present
     if (cameras.size() >= 1) {
       String CAMERA_NAME = cameras.get(0).getName();
-      System.out.println("Using camera 0: ");
-      System.out.println(CAMERA_NAME);
-      System.out.println("Width");
-      System.out.println(cameras.get(0).getProperty("width").toString());
-      System.out.println("Height");
-      System.out.println(cameras.get(0).getProperty("height").toString());
-      //FIXME not 10
-      int width = 10;
-      int height = 10;
+      int width = 267;
+      int height = 216;
       CvSource source = CameraServer.putVideo("Virtual Camera", width, height);
       VisionThread testThread = new VisionThread(cameras.get(0),
         new TestPipeline(), pipeline -> {
@@ -362,7 +356,7 @@ public final class Main {
         new BallFinder(), pipeline -> {
           List<KeyPoint> blobList = pipeline.findBlobsOutput.toList();
           NetworkTablesHelper.setBoolean("photonvision", CAMERA_NAME, "hasTarget", blobList.size() > 0);
-          KeyPoint[] bestBlob = {blobList.get(0)};
+          KeyPoint[] bestBlob = {new KeyPoint(0, 0, 0)};
           blobList.forEach(keypoint -> {
             if(keypoint.size > bestBlob[0].size) {
               bestBlob[0] = keypoint;
@@ -370,6 +364,7 @@ public final class Main {
           });
           NetworkTablesHelper.setDouble("photonvision", CAMERA_NAME, "targetPixelsX", bestBlob[0].pt.x);
           ntinst.flush();
+          source.putFrame(pipeline.maskOutput);
       });
       NetworkTablesHelper.setBoolean("CameraPublisher", new StringBuilder(CAMERA_NAME).append("-output").toString(), "connected", true);
       /* something like this for GRIP:
@@ -379,8 +374,8 @@ public final class Main {
       });
        */
       // FIXME Change to tracking thread
-      testThread.start();
-      //ballTrack.start();
+      //testThread.start();
+      ballTrack.start();
     }
 
     // loop forever

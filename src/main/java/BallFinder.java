@@ -8,6 +8,7 @@ import org.opencv.imgproc.*;
 
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.vision.VisionPipeline;
+import edu.wpi.first.wpilibj.Timer;
 
 /**
 * BallFinder class.
@@ -19,6 +20,7 @@ import edu.wpi.first.vision.VisionPipeline;
 public class BallFinder implements VisionPipeline{
 
 	//Outputs
+	private Timer t;
 	private Mat resizeImageOutput = new Mat();
 	private Mat blur0Output = new Mat();
 	private Mat hsvThreshold0Output = new Mat();
@@ -41,8 +43,9 @@ public class BallFinder implements VisionPipeline{
 	 * This is the primary method that runs the entire pipeline and updates the outputs.
 	 */
 	public void process(Mat source0) {
-		setswitch0(NetworkTableInstance.getDefault().getTable("FMSInfo").getEntry("IsRedAlliance").getBoolean(false));
-
+		t = new Timer();
+		t.start();
+		setswitch0(NetworkTablesHelper.getBoolean("FMSInfo", "IsRedAlliance"));
 		// Step Resize_Image0:
 		Mat resizeImageInput = source0;
 		double resizeImageWidth = 267.0;
@@ -127,7 +130,8 @@ public class BallFinder implements VisionPipeline{
 		Mat maskInput = blur0Output;
 		Mat maskMask = cvErodeOutput;
 		mask(maskInput, maskMask, maskOutput);
-
+		int fps = (int)(1.0 / t.get());
+		Imgproc.putText(maskOutput, new StringBuilder().append(fps).toString(), new Point(0,30), Imgproc.FONT_HERSHEY_SIMPLEX, 1, new Scalar(255,255,255));
 	}
 
 	/**

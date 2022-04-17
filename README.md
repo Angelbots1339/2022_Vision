@@ -22,3 +22,6 @@
 
 ## Uploading .jar to Pi
 -- TODO --
+
+## Using OutlineViewer
+Local port is 127.0.0.1
