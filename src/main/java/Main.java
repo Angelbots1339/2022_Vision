@@ -289,15 +289,16 @@ public final class Main {
   /**
    * Example pipeline.
    */
-  public static class MyPipeline implements VisionPipeline {
-    public int val;
-
-    @Override
-    public void process(Mat mat) {
-      val += 1;
+  public static class PublishMat implements VisionPipeline {
+    private CvSource source;
+    public PublishMat(CvSource source) {
+      this.source = source;
     }
 
-
+    @Override
+    public void process(Mat arg0) {
+      source.putFrame(arg0);
+    }
   }
 
   /**
@@ -316,13 +317,13 @@ public final class Main {
     // start NetworkTables
     NetworkTableInstance ntinst = NetworkTableInstance.getDefault();
     if (server) {
-      System.out.println("Setting up NetworkTables server on localhost");
-      ntinst.startServer("networktables.ini", "localhost");
+      System.out.println("Joining local server 192.168.99.99");
+      ntinst.startClient("192.168.99.99");
+      ntinst.startDSClient();
       System.out.println("NT connected? " + ntinst.isConnected());
     } else {
       System.out.println("Setting up NetworkTables client for team " + team);
-      //ntinst.startClientTeam(team);
-      ntinst.startClient("192.168.99.114");
+      ntinst.startClientTeam(team);
       ntinst.startDSClient();
     }
     ntinst.setUpdateRate(0.01);
@@ -337,52 +338,43 @@ public final class Main {
       startSwitchedCamera(config);
     }
 
-    // start image processing on camera 0 if present
-    if (cameras.size() >= 1) {
-      String CAMERA_NAME = cameras.get(0).getName();
-      int width = 267;
-      int height = 216;
-      CvSource source = CameraServer.putVideo("Virtual Camera", width, height);
-      VisionThread testThread = new VisionThread(cameras.get(0),
-        new TestPipeline(), pipeline -> {
-          pipeline.findBlobsOutput.toList().forEach(keypoint -> {
-            System.out.println(keypoint.pt.x);
-            System.out.println(keypoint.pt.y);
-          }
-        );
-        source.putFrame(pipeline.getMatOutput());
-      });
-      VisionThread ballTrack = new VisionThread(cameras.get(0),
-        new BallFinder(), pipeline -> {
-          List<KeyPoint> blobList = pipeline.findBlobsOutput.toList();
-          NetworkTablesHelper.setBoolean("photonvision", CAMERA_NAME, "hasTarget", blobList.size() > 0);
-          KeyPoint[] bestBlob = {new KeyPoint(0, 0, 0)};
-          blobList.forEach(keypoint -> {
-            if(keypoint.size > bestBlob[0].size) {
-              bestBlob[0] = keypoint;
-            }
-          });
-          NetworkTablesHelper.setDouble("photonvision", CAMERA_NAME, "targetPixelsX", bestBlob[0].pt.x);
-          ntinst.flush();
-          source.putFrame(pipeline.maskOutput);
-      });
-      NetworkTablesHelper.setBoolean("CameraPublisher", new StringBuilder(CAMERA_NAME).append("-output").toString(), "connected", true);
-      /* something like this for GRIP:
-      VisionThread visionThread = new VisionThread(cameras.get(0),
-              new GripPipeline(), pipeline -> {
-        ...
-      });
-       */
-      // FIXME Change to tracking thread
-      //testThread.start();
-      ballTrack.start();
-    }
+    String CAMERA_NAME = cameras.get(0).getName();
+    CvSource source = CameraServer.putVideo("rPi Camera 0-input", 160, 120);
+    CvSource output = CameraServer.putVideo("rPi Camera 0-output", 267, 216);
+
+    VisionThread publishSource = new VisionThread(cameras.get(0), new PublishMat(source), pipeline -> {});
+    publishSource.start();
+
+    NetworkTablesHelper.setDouble("photonvision", CAMERA_NAME, "pipelineIndex", -1);
+    boolean trackingStarted = false;
 
     // loop forever
     for (;;) {
       try {
-        Thread.sleep(10000);
-        //System.out.println("NT connected? " + ntinst.isConnected());
+        Thread.sleep(1000);
+        if(!trackingStarted && NetworkTablesHelper.getDouble("photonvision", cameras.get(0).getName(), "pipelineIndex") == -1) {
+          System.out.println("No pipeline set... waiting to start tracking pipeline");
+        } else if (!trackingStarted){
+          trackingStarted = true;
+          VisionThread ballTrack = new VisionThread(cameras.get(0),
+            new BallFinder(() -> NetworkTablesHelper.getDouble("photonvision", cameras.get(0).getName(), "pipelineIndex") == 0), pipeline -> {
+              List<KeyPoint> blobList = pipeline.findBlobsOutput.toList();
+              NetworkTablesHelper.setBoolean("photonvision", cameras.get(0).getName(), "hasTarget", blobList.size() > 0);
+              KeyPoint[] bestBlob = {new KeyPoint(0, 0, 0)};
+              blobList.forEach(keypoint -> {
+                if(keypoint.size > bestBlob[0].size) {
+                  bestBlob[0] = keypoint;
+                }
+              });
+              NetworkTablesHelper.setDouble("photonvision", cameras.get(0).getName(), "targetPixelsX", bestBlob[0].pt.x);
+              ntinst.flush();
+              output.putFrame(pipeline.maskOutput);
+            }
+          );
+          ballTrack.start();
+        }
+        
+        // System.out.println("NT connected? " + ntinst.isConnected());
       } catch (InterruptedException ex) {
         return;
       }

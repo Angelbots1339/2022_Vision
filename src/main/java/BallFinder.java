@@ -1,6 +1,7 @@
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.function.BooleanSupplier;
 
 import org.opencv.core.*;
 import org.opencv.features2d.SimpleBlobDetector;
@@ -18,6 +19,12 @@ import edu.wpi.first.wpilibj.Timer;
 * @author GRIP
 */
 public class BallFinder implements VisionPipeline{
+
+	public BallFinder(BooleanSupplier isTeamRed) {
+		this.isTeamRed = isTeamRed;
+	}
+
+	private BooleanSupplier isTeamRed = () -> false;
 
 	//Outputs
 	private Timer t;
@@ -45,7 +52,7 @@ public class BallFinder implements VisionPipeline{
 	public void process(Mat source0) {
 		t = new Timer();
 		t.start();
-		setswitch0(NetworkTablesHelper.getBoolean("FMSInfo", "IsRedAlliance"));
+		setswitch0(isTeamRed.getAsBoolean());
 		// Step Resize_Image0:
 		Mat resizeImageInput = source0;
 		double resizeImageWidth = 267.0;
