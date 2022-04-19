@@ -30,6 +30,7 @@ import edu.wpi.first.vision.VisionThread;
 
 import org.opencv.core.KeyPoint;
 import org.opencv.core.Mat;
+import org.opencv.core.MatOfPoint;
 
 //import org.opencv.objdetect.*;
 
@@ -356,9 +357,10 @@ public final class Main {
           System.out.println("No pipeline set... waiting to start tracking pipeline");
         } else if (!trackingStarted){
           trackingStarted = true;
-          VisionThread ballTrack = new VisionThread(cameras.get(0),
-            new BallFinder(() -> NetworkTablesHelper.getDouble("photonvision", cameras.get(0).getName(), "pipelineIndex") == 0), pipeline -> {
-              List<KeyPoint> blobList = pipeline.findBlobsOutput.toList();
+          boolean isTeamRed = NetworkTablesHelper.getDouble("photonvision", cameras.get(0).getName(), "pipelineIndex") == 0;
+          VisionThread ballTrackSimple = new VisionThread(cameras.get(0),
+            new BallFinder(isTeamRed), pipeline -> {
+              List<KeyPoint> blobList = pipeline.findBlobsOutput().toList();
               NetworkTablesHelper.setBoolean("photonvision", cameras.get(0).getName(), "hasTarget", blobList.size() > 0);
               KeyPoint[] bestBlob = {new KeyPoint(0, 0, 0)};
               blobList.forEach(keypoint -> {
@@ -368,10 +370,26 @@ public final class Main {
               });
               NetworkTablesHelper.setDouble("photonvision", cameras.get(0).getName(), "targetPixelsX", bestBlob[0].pt.x);
               ntinst.flush();
-              output.putFrame(pipeline.maskOutput);
+              output.putFrame(pipeline.maskOutput());
             }
           );
-          ballTrack.start();
+          VisionThread ballTrackScored = new VisionThread(cameras.get(0),
+            new BallFinderContours(isTeamRed), pipeline -> {
+              List<KeyPoint> blobList = pipeline.findBlobsOutput().toList();
+              NetworkTablesHelper.setBoolean("photonvision", cameras.get(0).getName(), "hasTarget", blobList.size() > 0);
+              KeyPoint[] bestBlob = {new KeyPoint(0, 0, 0)};
+              blobList.forEach(keypoint -> {
+                if(keypoint.size > bestBlob[0].size) {
+                  bestBlob[0] = keypoint;
+                }
+              });
+              ArrayList<MatOfPoint> contours = pipeline.filterContoursOutput();
+              NetworkTablesHelper.setDouble("photonvision", cameras.get(0).getName(), "targetPixelsX", bestBlob[0].pt.x);
+              ntinst.flush();
+              output.putFrame(pipeline.maskOutput());
+            }
+          );
+          ballTrackSimple.start();
         }
         
         // System.out.println("NT connected? " + ntinst.isConnected());
