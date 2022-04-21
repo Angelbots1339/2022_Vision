@@ -319,7 +319,7 @@ public final class Main {
     NetworkTableInstance ntinst = NetworkTableInstance.getDefault();
     if (server) {
       System.out.println("Joining local server 192.168.99.99");
-      ntinst.startClient("192.168.99.99");
+      ntinst.startClient("169.254.31.151");
       ntinst.startDSClient();
       System.out.println("NT connected? " + ntinst.isConnected());
     } else {
@@ -356,8 +356,9 @@ public final class Main {
         if(!trackingStarted && NetworkTablesHelper.getDouble("photonvision", cameras.get(0).getName(), "pipelineIndex") == -1) {
           System.out.println("No pipeline set... waiting to start tracking pipeline");
         } else if (!trackingStarted){
+          System.out.println("Setting pipeline");
           trackingStarted = true;
-          boolean isTeamRed = NetworkTablesHelper.getDouble("photonvision", cameras.get(0).getName(), "pipelineIndex") == 0;
+          boolean isTeamRed = NetworkTablesHelper.getDouble("photonvision", cameras.get(0).getName(), "pipelineIndex") == 1;
           VisionThread ballTrackSimple = new VisionThread(cameras.get(0),
             new BallFinder(isTeamRed), pipeline -> {
               List<KeyPoint> blobList = pipeline.findBlobsOutput().toList();
@@ -374,7 +375,7 @@ public final class Main {
             }
           );
           VisionThread ballTrackScored = new VisionThread(cameras.get(0),
-            new BallFinderContours(isTeamRed), pipeline -> {
+            new BallFinderContoursTwo(isTeamRed), pipeline -> {
               List<KeyPoint> blobList = pipeline.findBlobsOutput().toList();
               NetworkTablesHelper.setBoolean("photonvision", cameras.get(0).getName(), "hasTarget", blobList.size() > 0);
               KeyPoint[] bestBlob = {new KeyPoint(0, 0, 0)};
@@ -383,13 +384,12 @@ public final class Main {
                   bestBlob[0] = keypoint;
                 }
               });
-              ArrayList<MatOfPoint> contours = pipeline.filterContoursOutput();
               NetworkTablesHelper.setDouble("photonvision", cameras.get(0).getName(), "targetPixelsX", bestBlob[0].pt.x);
               ntinst.flush();
               output.putFrame(pipeline.maskOutput());
             }
           );
-          ballTrackSimple.start();
+          ballTrackScored.start();
         }
         
         // System.out.println("NT connected? " + ntinst.isConnected());

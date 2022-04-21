@@ -1,14 +1,14 @@
 <grip:Pipeline>
   <sources>
     <grip:Camera>
-      <property name="deviceNumber" value="2"/>
+      <property name="address" value="http://raspberrypi.local:1181/?action=stream"/>
     </grip:Camera>
   </sources>
   <steps>
     <grip:Step name="Resize Image">
       <grip:Input step="0" socket="0"/>
       <grip:Input step="0" socket="1">
-        <value>500.0</value>
+        <value>315.0</value>
       </grip:Input>
       <grip:Input step="0" socket="2">
         <value>216.0</value>
@@ -22,20 +22,20 @@
       <grip:Input step="1" socket="0"/>
       <grip:Input step="1" socket="1">
         <value>
-          <double>102.27490883777088</double>
-          <double>109.97753083226162</double>
+          <double>94.91525423728812</double>
+          <double>116.30442011169923</double>
         </value>
       </grip:Input>
       <grip:Input step="1" socket="2">
         <value>
-          <double>152.07157606458932</double>
-          <double>208.03030881014737</double>
+          <double>67.23163841807909</double>
+          <double>187.7768014059754</double>
         </value>
       </grip:Input>
       <grip:Input step="1" socket="3">
         <value>
-          <double>73.63464721178603</double>
-          <double>168.63636363636363</double>
+          <double>60.028248587570616</double>
+          <double>212.42530755711775</double>
         </value>
       </grip:Input>
       <grip:Output step="1" socket="0" previewed="false"/>
@@ -45,19 +45,19 @@
       <grip:Input step="2" socket="1">
         <value>
           <double>0.0</double>
-          <double>14.31220973994196</double>
+          <double>19.057376699520166</double>
         </value>
       </grip:Input>
       <grip:Input step="2" socket="2">
         <value>
-          <double>102.44822313556564</double>
-          <double>164.09090909090907</double>
+          <double>52.824858757062145</double>
+          <double>149.6836555360281</double>
         </value>
       </grip:Input>
       <grip:Input step="2" socket="3">
         <value>
-          <double>100.8474553372227</double>
-          <double>217.12121790105647</double>
+          <double>88.84180790960451</double>
+          <double>243.79613356766257</double>
         </value>
       </grip:Input>
       <grip:Output step="2" socket="0" previewed="false"/>
@@ -66,20 +66,20 @@
       <grip:Input step="3" socket="0"/>
       <grip:Input step="3" socket="1">
         <value>
-          <double>177.85310734463283</double>
+          <double>175.25423728813558</double>
           <double>180.0</double>
         </value>
       </grip:Input>
       <grip:Input step="3" socket="2">
         <value>
-          <double>135.87109638271116</double>
-          <double>166.9282833886422</double>
+          <double>93.64406779661017</double>
+          <double>154.1652021089631</double>
         </value>
       </grip:Input>
       <grip:Input step="3" socket="3">
         <value>
-          <double>80.03766859992076</double>
-          <double>114.09090042114258</double>
+          <double>21.610169491525422</double>
+          <double>149.6836555360281</double>
         </value>
       </grip:Input>
       <grip:Output step="3" socket="0" previewed="false"/>
@@ -91,7 +91,7 @@
     </grip:Step>
     <grip:Step name="Switch">
       <grip:Input step="5" socket="0">
-        <value>false</value>
+        <value>true</value>
       </grip:Input>
       <grip:LinkedInput step="5" socket="1"/>
       <grip:LinkedInput step="5" socket="2"/>
@@ -136,7 +136,7 @@
     <grip:Step name="Find Blobs">
       <grip:Input step="9" socket="0"/>
       <grip:Input step="9" socket="1">
-        <value>200.0</value>
+        <value>65.0</value>
       </grip:Input>
       <grip:Input step="9" socket="2">
         <value>
@@ -162,16 +162,16 @@
         <value>50.0</value>
       </grip:Input>
       <grip:Input step="11" socket="2">
-        <value>0</value>
+        <value>0.0</value>
       </grip:Input>
       <grip:Input step="11" socket="3">
-        <value>0</value>
+        <value>0.0</value>
       </grip:Input>
       <grip:Input step="11" socket="4">
         <value>80.0</value>
       </grip:Input>
       <grip:Input step="11" socket="5">
-        <value>0</value>
+        <value>0.0</value>
       </grip:Input>
       <grip:Input step="11" socket="6">
         <value>60.0</value>
@@ -183,16 +183,16 @@
         </value>
       </grip:Input>
       <grip:Input step="11" socket="8">
-        <value>1000000</value>
+        <value>1000000.0</value>
       </grip:Input>
       <grip:Input step="11" socket="9">
-        <value>0</value>
+        <value>0.0</value>
       </grip:Input>
       <grip:Input step="11" socket="10">
-        <value>0</value>
+        <value>0.0</value>
       </grip:Input>
       <grip:Input step="11" socket="11">
-        <value>1000</value>
+        <value>1000.0</value>
       </grip:Input>
       <grip:Output step="11" socket="0" previewed="true"/>
     </grip:Step>
@@ -205,31 +205,7 @@
   <connections>
     <grip:Connection>
       <grip:Output step="0" socket="0" previewed="true"/>
-      <grip:Input step="12" socket="0"/>
-    </grip:Connection>
-    <grip:Connection>
-      <grip:Output step="4" socket="0" previewed="false"/>
-      <grip:LinkedInput step="5" socket="2"/>
-    </grip:Connection>
-    <grip:Connection>
-      <grip:Output step="0" socket="0" previewed="true"/>
       <grip:Input step="2" socket="0"/>
-    </grip:Connection>
-    <grip:Connection>
-      <grip:Output step="0" socket="0" previewed="true"/>
-      <grip:Input step="3" socket="0"/>
-    </grip:Connection>
-    <grip:Connection>
-      <grip:Output step="6" socket="0" previewed="false"/>
-      <grip:Input step="7" socket="0"/>
-    </grip:Connection>
-    <grip:Connection>
-      <grip:Output step="3" socket="0" previewed="false"/>
-      <grip:Input step="4" socket="0"/>
-    </grip:Connection>
-    <grip:Connection>
-      <grip:Output step="8" socket="0" previewed="false"/>
-      <grip:Input step="9" socket="0"/>
     </grip:Connection>
     <grip:Connection>
       <grip:Output step="10" socket="0" previewed="false"/>
@@ -237,35 +213,59 @@
     </grip:Connection>
     <grip:Connection>
       <grip:Output step="0" socket="0" previewed="true"/>
-      <grip:Input step="1" socket="0"/>
+      <grip:Input step="3" socket="0"/>
     </grip:Connection>
     <grip:Connection>
-      <grip:Output source="0" socket="0" previewed="false"/>
-      <grip:Input step="0" socket="0"/>
+      <grip:Output step="5" socket="0" previewed="false"/>
+      <grip:Input step="10" socket="0"/>
+    </grip:Connection>
+    <grip:Connection>
+      <grip:Output step="3" socket="0" previewed="false"/>
+      <grip:Input step="4" socket="0"/>
+    </grip:Connection>
+    <grip:Connection>
+      <grip:Output step="6" socket="0" previewed="false"/>
+      <grip:Input step="7" socket="0"/>
     </grip:Connection>
     <grip:Connection>
       <grip:Output step="7" socket="0" previewed="false"/>
       <grip:Input step="8" socket="0"/>
     </grip:Connection>
     <grip:Connection>
-      <grip:Output step="2" socket="0" previewed="false"/>
-      <grip:Input step="4" socket="1"/>
+      <grip:Output step="8" socket="0" previewed="false"/>
+      <grip:Input step="9" socket="0"/>
+    </grip:Connection>
+    <grip:Connection>
+      <grip:Output step="0" socket="0" previewed="true"/>
+      <grip:Input step="12" socket="0"/>
+    </grip:Connection>
+    <grip:Connection>
+      <grip:Output step="4" socket="0" previewed="false"/>
+      <grip:LinkedInput step="5" socket="2"/>
     </grip:Connection>
     <grip:Connection>
       <grip:Output step="5" socket="0" previewed="false"/>
       <grip:Input step="12" socket="1"/>
     </grip:Connection>
     <grip:Connection>
+      <grip:Output step="2" socket="0" previewed="false"/>
+      <grip:Input step="4" socket="1"/>
+    </grip:Connection>
+    <grip:Connection>
+      <grip:Output step="0" socket="0" previewed="true"/>
+      <grip:Input step="1" socket="0"/>
+    </grip:Connection>
+    <grip:Connection>
       <grip:Output step="5" socket="0" previewed="false"/>
       <grip:Input step="6" socket="0"/>
     </grip:Connection>
     <grip:Connection>
-      <grip:Output step="1" socket="0" previewed="false"/>
-      <grip:LinkedInput step="5" socket="1"/>
+      <grip:Output source="0" socket="0" previewed="true"/>
+      <grip:Input step="0" socket="0"/>
     </grip:Connection>
     <grip:Connection>
-      <grip:Output step="5" socket="0" previewed="false"/>
-      <grip:Input step="10" socket="0"/>
+      <grip:Output step="1" socket="0" previewed="false"/>
+      <grip:LinkedInput step="5" socket="1"/>
     </grip:Connection>
   </connections>
   <settings>
@@ -279,9 +279,9 @@
   </settings>
   <codeGenerationSettings>
     <language>Java</language>
-    <className>BallFinderContours</className>
-    <implementWpilibPipeline>true</implementWpilibPipeline>
-    <saveDir>C:\Users\0dps1\Downloads\java-multiCameraServer\java-multiCameraServer\src\main\java</saveDir>
+    <className>BallFinderContoursThree</className>
+    <implementWpilibPipeline>false</implementWpilibPipeline>
+    <saveDir>C:\Users\angel\OneDrive\Desktop\Repositories\2022_Vision\src\main</saveDir>
     <packageName></packageName>
     <moduleName>grip</moduleName>
   </codeGenerationSettings>
